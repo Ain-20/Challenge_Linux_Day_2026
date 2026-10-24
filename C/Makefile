@@ -18,11 +18,9 @@ YELLOW := \033[1;33m
 CYAN   := \033[1;36m
 RESET  := \033[0m
 
-# Lista delle challenge da 1 a 10
 IDS := 1 2 3 4 5 6 7 8 9 10
-CHECK_TARGETS := $(addprefix check-,$(IDS))
 
-.PHONY: all help prepare-solutions check check-all clean distclean $(CHECK_TARGETS)
+.PHONY: all help prepare-solutions check check-all clean distclean
 
 all: help
 
@@ -30,11 +28,14 @@ help:
 	@echo "$(CYAN)==================================================================$(RESET)"
 	@echo "$(CYAN)           TEST HARNESS SFIDE IN C - COMANDI DISPONIBILI          $(RESET)"
 	@echo "$(CYAN)==================================================================$(RESET)"
-	@echo "  $(GREEN)make check-1$(RESET) (oppure make check-2, ..., check-10)"
+	@echo "  $(GREEN)make check-1$(RESET) (oppure make check-2, ..., make check-10)"
 	@echo "      Compila C_X.c dell'utente e confronta l'output con la soluzione."
 	@echo ""
-	@echo "  $(GREEN)make check C=X$(RESET)"
-	@echo "      Esegue la verifica per la challenge specificata (es. make check C=1)"
+	@echo "  $(GREEN)make 1$(RESET) (oppure make 2, ..., make 10)"
+	@echo "      Scorciatoia rapida numerica per verificare la challenge."
+	@echo ""
+	@echo "  $(GREEN)make check C=1$(RESET)  (ATTENZIONE: senza spazi attorno a '=')"
+	@echo "      Esegue la verifica per la challenge specificata."
 	@echo ""
 	@echo "  $(GREEN)make check-all$(RESET)"
 	@echo "      Verifica tutte le challenge da 1 a 10 in sequenza."
@@ -67,19 +68,29 @@ prepare-solutions:
 	@echo "    Puoi ora proteggere i sorgenti con: chmod 600 C_*_sol.c (o nasconderli)."
 
 # ------------------------------------------------------------------------------
-# 2. VERIFICA SINGOLA CHALLENGE
+# 2. SCORCIATOIE E VERIFICA SINGOLA CHALLENGE
 # ------------------------------------------------------------------------------
-check:
-ifndef C
-	@echo "$(RED)[ERRORE] Specificare la challenge da verificare. Es: make check C=1$(RESET)"
-	@exit 1
-else
-	@$(MAKE) --no-print-directory check-$(C)
-endif
+# Scorciatoie numeriche: make 1, make 2, ..., make 10
+1 2 3 4 5 6 7 8 9 10: %: check-%
 
-$(CHECK_TARGETS): check-%:
+# Supporto a: make check C=1 oppure make check N=1
+check:
+	@TARGET_NUM="$(or $(C),$(N))"; \
+	if [ -z "$$TARGET_NUM" ]; then \
+		echo "$(RED)[ERRORE] Specificare la challenge da verificare.$(RESET)"; \
+		echo "Esempi corretti:"; \
+		echo "  make check-1"; \
+		echo "  make 1"; \
+		echo "  make check C=1  (senza spazi attorno al '=')"; \
+		exit 1; \
+	else \
+		$(MAKE) --no-print-directory check-$$TARGET_NUM; \
+	fi
+
+# Regola per check-1, check-2, ..., check-10
+check-%:
 	@mkdir -p $(BUILD_DIR)
-	@NUM=$*; \
+	@NUM="$*"; \
 	USER_SRC="C_$${NUM}.c"; \
 	USER_BIN="$(BUILD_DIR)/user_$${NUM}"; \
 	SOL_BIN="$(SOL_DIR)/sol_$${NUM}"; \
