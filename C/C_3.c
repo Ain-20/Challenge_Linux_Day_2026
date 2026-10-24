@@ -3,6 +3,7 @@
 
 char *my_strtok(char *str, const char *delim) {
     static char *last_pos = NULL;
+    (void)last_pos;
     char *token_start = NULL;
 
     return token_start;
