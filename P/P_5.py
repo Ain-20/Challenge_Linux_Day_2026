@@ -1,5 +1,5 @@
 def compress_string(s):
-
+    pass
 
 # Test
 print(compress_string("aabcccccaaa")) # a2b1c5a3

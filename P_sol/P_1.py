@@ -1,52 +1,36 @@
 """
-ESERCIZIO DA MODIFICARE 2: Unione di Intervalli Sovrapposti (Merge Intervals)
+SOLUZIONE CHALLENGE 1: Unione di Intervalli Sovrapposti (Merge Intervals)
 ----------------------------------------------------------------------------
 OBIETTIVO:
 Data una lista di intervalli chiusi `[start, end]`, unire tutti gli intervalli
 sovrapposti e restituire una nuova lista di intervalli non sovrapposti, ordinati
 in modo crescente per `start`.
-
-Esempio:
-Input:  [[1, 3], [2, 6], [8, 10], [15, 18]]
-Output: [[1, 6], [8, 10], [15, 18]]
-
-Esempio 2:
-Input:  [[1, 4], [4, 5]]
-Output: [[1, 5]] (gli estremi coincidenti si considerano sovrapposti!)
-
-BUG DA RISOLVERE:
-1. Il codice presume che la lista sia già ordinata per `start`, ma non lo è sempre!
-2. Mutare la lista originale durante l'iterazione causa salti di indici inaspettati.
-3. Condizione di sovrapposizione errata: considera sovrapposti solo quelli strettamente
-   maggiori (`curr[0] < last[1]`), dimenticandosi del caso in cui gli estremi sono uguali (`<=`).
-4. Non gestisce la lista vuota `[]` restituendo un errore `IndexError`.
 """
 
 def merge_intervals(intervals: list[list[int]]) -> list[list[int]]:
-    # BUG: IndexError su lista vuota
-    # BUG: Non ordina gli intervalli in base a start!
+    if not intervals:
+        return []
 
-    # Codice difettoso attuale:
-    merged = [intervals[0]]
+    # 1. Ordina la lista per start per non dipendere dall'ordine di input
+    sorted_intervals = sorted(intervals, key=lambda x: x[0])
+    # Copia il primo intervallo per non mutare l'input originale
+    merged = [[sorted_intervals[0][0], sorted_intervals[0][1]]]
 
-    for i in range(1, len(intervals)):
-        current = intervals[i]
+    for current in sorted_intervals[1:]:
         last = merged[-1]
 
-        # BUG: Se current[0] == last[1], dovrebbero essere uniti (es: [1,4] e [4,5])!
-        if current[0] < last[1]:
-            # BUG: Dovrebbe prendere il massimo tra last[1] e current[1],
-            # perche' current potrebbe essere contenuto interamente dentro last!
-            last[1] = current[1]
+        # 2. Gestisce anche estremi coincidenti (<=)
+        if current[0] <= last[1]:
+            # 3. Considera intervalli completamente contenuti prendendo il massimo
+            last[1] = max(last[1], current[1])
         else:
-            merged.append(current)
+            merged.append([current[0], current[1]])
 
     return merged
 
 
 # ==============================================================================
-# SUITE DI TEST (Non modificare i test! Devono passare tutti dopo le correzioni)
-# Esegui con: python ex2_merge_intervals.py
+# SUITE DI TEST
 # ==============================================================================
 if __name__ == "__main__":
     print("Verifica ex2_merge_intervals...")

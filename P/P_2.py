@@ -1,7 +1,7 @@
 from decimal import Decimal, ROUND_HALF_UP
 
 """
-ESERCIZIO DA MODIFICARE 3: Registro Contabile (Bank Ledger)
+CHALLENGE 2: Registro Contabile (Bank Ledger)
 -----------------------------------------------------------
 OBIETTIVO:
 Implementare la classe `BankAccount` che gestisce depositi, prelievi e storico
@@ -9,21 +9,11 @@ delle transazioni, garantendo:
 1. Nessuna contaminazione di dati tra conti correnti diversi.
 2. Precisione finanziaria esatta (nessun errore di arrotondamento float tipo 0.1 + 0.2 != 0.3).
 3. Saldo sempre coerente con la somma delle transazioni registrate.
-
-BUG DA RISOLVERE:
-1. Trappola del Default Mutable Argument: il parametro `transactions=[]` nel costruttore
-   fa sì che tutti i conti condividano lo stesso identico storico di transazioni in memoria!
-2. Uso di `float` standard per i calcoli monetari che genera imprecisioni di centesimi:
-   utilizzare invece `Decimal` o interi in centesimi.
-3. Nel metodo `withdraw`, se il prelievo fallisce per fondi insufficienti, la transazione
-   viene comunque aggiunta alla lista!
 """
 
 class BankAccount:
-    # BUG 1: Argomento di default mutabile!
     def __init__(self, owner: str, initial_balance=0.0, transactions=[]):
         self.owner = owner
-        # BUG 2: Salvare i soldi come float binario porta a 0.1 + 0.2 = 0.30000000000000004
         self.balance = float(initial_balance)
         self.transactions = transactions
 
@@ -41,7 +31,6 @@ class BankAccount:
         if amount <= 0:
             return False
 
-        # BUG 3: Aggiunge la transazione prima di verificare se ci sono abbastanza fondi!
         self.transactions.append(("WITHDRAW", amount))
 
         if self.balance < amount:
@@ -57,10 +46,10 @@ class BankAccount:
 
 # ==============================================================================
 # SUITE DI TEST (Non modificare i test! Devono passare tutti dopo le correzioni)
-# Esegui con: python ex3_bank_ledger.py
+# Esegui con: python P_2.py
 # ==============================================================================
 if __name__ == "__main__":
-    print("Verifica ex3_bank_ledger...")
+    print("Verifica BankAccount...")
 
     # Test 1: Isolamento delle transazioni tra istanze diverse
     acc1 = BankAccount("Alice", 100.0)
@@ -87,4 +76,4 @@ if __name__ == "__main__":
 
     assert acc3.get_balance() == 0.0, f"ERRORE di precisione float! Saldo: {acc3.get_balance()} != 0.0"
 
-    print("[COMPLIMENTI] Tutti i test di ex3_bank_ledger sono superati!")
+    print("[COMPLIMENTI] Tutti i test di BankAccount sono superati!")
