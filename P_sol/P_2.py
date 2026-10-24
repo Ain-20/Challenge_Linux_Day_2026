@@ -1,63 +1,53 @@
 from decimal import Decimal, ROUND_HALF_UP
 
 """
-ESERCIZIO DA MODIFICARE 3: Registro Contabile (Bank Ledger)
+SOLUZIONE CHALLENGE 2: Registro Contabile (Bank Ledger)
 -----------------------------------------------------------
 OBIETTIVO:
 Implementare la classe `BankAccount` che gestisce depositi, prelievi e storico
 delle transazioni, garantendo:
 1. Nessuna contaminazione di dati tra conti correnti diversi.
-2. Precisione finanziaria esatta (nessun errore di arrotondamento float tipo 0.1 + 0.2 != 0.3).
+2. Precisione finanziaria esatta (nessun errore di arrotondamento float).
 3. Saldo sempre coerente con la somma delle transazioni registrate.
-
-BUG DA RISOLVERE:
-1. Trappola del Default Mutable Argument: il parametro `transactions=[]` nel costruttore
-   fa sì che tutti i conti condividano lo stesso identico storico di transazioni in memoria!
-2. Uso di `float` standard per i calcoli monetari che genera imprecisioni di centesimi:
-   utilizzare invece `Decimal` o interi in centesimi.
-3. Nel metodo `withdraw`, se il prelievo fallisce per fondi insufficienti, la transazione
-   viene comunque aggiunta alla lista!
 """
 
 class BankAccount:
-    # BUG 1: Argomento di default mutabile!
-    def __init__(self, owner: str, initial_balance=0.0, transactions=[]):
+    def __init__(self, owner: str, initial_balance=0.0, transactions=None):
         self.owner = owner
-        # BUG 2: Salvare i soldi come float binario porta a 0.1 + 0.2 = 0.30000000000000004
-        self.balance = float(initial_balance)
-        self.transactions = transactions
+        # Precisione esatta usando Decimal
+        self.balance = Decimal(str(initial_balance))
+        # Evita la trappola dell'argomento di default mutabile
+        self.transactions = [] if transactions is None else list(transactions)
 
         if initial_balance > 0:
-            self.transactions.append(("DEPOSIT", initial_balance))
+            self.transactions.append(("DEPOSIT", float(initial_balance)))
 
     def deposit(self, amount: float) -> bool:
         if amount <= 0:
             return False
-        self.balance += amount
-        self.transactions.append(("DEPOSIT", amount))
+        self.balance += Decimal(str(amount))
+        self.transactions.append(("DEPOSIT", float(amount)))
         return True
 
     def withdraw(self, amount: float) -> bool:
         if amount <= 0:
             return False
 
-        # BUG 3: Aggiunge la transazione prima di verificare se ci sono abbastanza fondi!
-        self.transactions.append(("WITHDRAW", amount))
-
-        if self.balance < amount:
+        dec_amount = Decimal(str(amount))
+        if self.balance < dec_amount:
             return False
 
-        self.balance -= amount
+        self.balance -= dec_amount
+        self.transactions.append(("WITHDRAW", float(amount)))
         return True
 
     def get_balance(self) -> float:
         # Ritorna il saldo arrotondato a 2 cifre decimali
-        return round(float(self.balance), 2)
+        return float(self.balance.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 # ==============================================================================
-# SUITE DI TEST (Non modificare i test! Devono passare tutti dopo le correzioni)
-# Esegui con: python ex3_bank_ledger.py
+# SUITE DI TEST
 # ==============================================================================
 if __name__ == "__main__":
     print("Verifica ex3_bank_ledger...")
